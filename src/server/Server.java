@@ -11,7 +11,7 @@ import java.util.Scanner;
 
 public class Server {
     public static void main(String[] args) {
-        ArrayList<Users> users = new ArrayList<>();
+        ArrayList<User> users = new ArrayList<>();
         try {
             ServerSocket serverSocket = new ServerSocket(8188); // Подняли сокет на порту
 
@@ -30,17 +30,17 @@ public class Server {
                             out.writeUTF("Добро пожаловать на сервер! Введите Ваше имя:");
 
                             String name = in.readUTF();
-                            Users userCurrent = new Users(socket,name);
+                            User userCurrent = new User(socket,name);
                             users.add(userCurrent);
                             out.writeUTF("Добро пожаловать на сервер!" + userCurrent.getName());
-                            for (Users user:users){
+                            for (User user:users){
                                 System.out.println(user.getUserSocket());
                                 DataOutputStream userOut = new DataOutputStream(user.getUserSocket().getOutputStream());
                                 userOut.writeUTF("К нам присоденился: "+userCurrent.getName());
                             }
                             while (true) {
                                 String request = in.readUTF();
-                                for(Users user:users){
+                                for(User user:users){
                                     //System.out.println(user);
                                     //System.out.println(request);
                                     if (user.getUserSocket()!= userCurrent.getUserSocket()){
@@ -70,11 +70,11 @@ public class Server {
 
     }
 }
-class Users {
+class User {
     private Socket userSocket;
     private String name;
 
-    public Users(Socket userSocket, String name) {
+    public User(Socket userSocket, String name) {
         this.userSocket = userSocket;
         this.name = name;
     }
