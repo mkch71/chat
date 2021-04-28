@@ -28,15 +28,21 @@ public class Server {
                             DataInputStream in = new DataInputStream(socket.getInputStream());
 
                             out.writeUTF("Добро пожаловать на сервер! Введите Ваше имя:");
-
-                            String name = in.readUTF();
+                            String name="";
+                            while (name.isBlank()) { //простая проверка имя не должно быть пустым
+                                out.writeUTF("Введите Ваше имя:");
+                                name = in.readUTF();
+                            }
                             User userCurrent = new User(socket,name);
                             users.add(userCurrent);
-                            out.writeUTF("Добро пожаловать на сервер!" + userCurrent.getName());
+                            out.writeUTF("Добро пожаловать на сервер! " + userCurrent.getName());
                             for (User user:users){
-                                System.out.println(user.getUserSocket());
-                                DataOutputStream userOut = new DataOutputStream(user.getUserSocket().getOutputStream());
-                                userOut.writeUTF("К нам присоденился: "+userCurrent.getName());
+                                //System.out.println(user.getUserSocket());
+                                if (user.getUserSocket()!= userCurrent.getUserSocket()){
+                                    DataOutputStream userOut = new DataOutputStream(user.getUserSocket().getOutputStream());
+                                    userOut.writeUTF("К нам присоединился: "+userCurrent.getName());
+                                }
+
                             }
                             while (true) {
                                 String request = in.readUTF();
