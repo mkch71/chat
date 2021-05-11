@@ -3,13 +3,15 @@ package server;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 
 public class Server {
+    static ArrayList<User> users = new ArrayList<>();
     public static void main(String[] args) {
-        ArrayList<User> users = new ArrayList<>();
+
         try {
             ServerSocket serverSocket = new ServerSocket(8188); // Подняли сокет на порту
 
@@ -24,25 +26,25 @@ public class Server {
                     public void run() {
 
                         try {
-                            DataOutputStream out = new DataOutputStream(socket.getOutputStream()); //поток вывода на сокете
+                            ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream()); //поток вывода на сокете
                             DataInputStream in = new DataInputStream(socket.getInputStream());
-
-                            out.writeUTF("Добро пожаловать на сервер!");
+                            userCurrent.setOos(oos);
+                            userCurrent.getOos().writeObject("Добро пожаловать на сервер!");
                             String name="";
                             while (name.isBlank()) { //простая проверка имя не должно быть пустым
-                                out.writeUTF("Введите Ваше имя:");
+                                userCurrent.getOos().writeObject("Введите Ваше имя:");
                                 name = in.readUTF();
                             }
 
                             userCurrent.setName(name);
-                            out.writeUTF("Добро пожаловать на сервер! " + userCurrent.getUserName());
+                            userCurrent.getOos().writeObject("Добро пожаловать на сервер! " + userCurrent.getUserName());
+                            sendUserList();
+                            //sendCurrentUser(userCurrent);
                             for (User user:users){
                                 //System.out.println(user.getUserSocket());
                                 if (user.equals(userCurrent)) continue;
-                                    DataOutputStream userOut = new DataOutputStream(user.getUserSocket().getOutputStream());
-                                    userOut.writeUTF("К нам присоединился: "+userCurrent.getUserName());
-
-
+                                    //DataOutputStream userOut = new DataOutputStream(user.getUserSocket().getOutputStream());
+                                    user.getOos().writeObject("К нам присоединился: "+userCurrent.getUserName());
                             }
                             while (true) {
                                 String request = in.readUTF();
@@ -50,20 +52,19 @@ public class Server {
                                     //System.out.println(user);
                                     //System.out.println(request);
                                     if (user.getUserSocket()!= userCurrent.getUserSocket()){
-                                        DataOutputStream userOut = new DataOutputStream(user.getUserSocket().getOutputStream());
-                                        userOut.writeUTF(userCurrent.getUserName()+" : "+request);
+                                        //DataOutputStream userOut = new DataOutputStream(user.getUserSocket().getOutputStream());
+                                        user.getOos().writeObject(userCurrent.getUserName()+" : "+request);
                                     }
-
                                 }
-
                             }
                         }catch (IOException e){
                             System.out.println(userCurrent.getUserName()+" покинул чат");
                             users.remove(userCurrent);
+                            sendUserList();
                             for (User user:users) {
                                 try {
-                                    DataOutputStream userOut = new DataOutputStream(user.getUserSocket().getOutputStream());
-                                    userOut.writeUTF(userCurrent.getUserName()+" покинул чат");
+                                    //DataOutputStream userOut = new DataOutputStream(user.getUserSocket().getOutputStream());
+                                    user.getOos().writeObject(userCurrent.getUserName()+" покинул чат");
                                 } catch (IOException ex) {
                                     ex.printStackTrace();
                                 }
@@ -72,17 +73,43 @@ public class Server {
                     }
                 });
                 thread.start();
-
             }
-
-
-
-
-
         } catch (IOException e) {
             e.printStackTrace();
         }
 
 
     }
+    private static void sendUserList(){
+        try {
+
+            ArrayList<String> usersName = new ArrayList<>();
+            for (User user:users){
+
+                usersName.add(user.getUserName());
+
+            }
+            for (User user:users){
+                user.getOos().writeObject(usersName);
+
+            }
+
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    private static void sendCurrentUser(User user){
+        ArrayList<String> userName = new ArrayList<>();
+        try {
+            userName.add(user.getUserName());
+            user.getOos().writeObject(userName);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }
+
+
+
+

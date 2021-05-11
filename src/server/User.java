@@ -1,12 +1,15 @@
 package server;
 
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.net.Socket;
 import java.util.UUID;
 
-public class User {
+public class User implements Serializable {
     private Socket userSocket;
     private String name;
     private UUID uuid;
+    private ObjectOutputStream oos;
 
     public User(Socket userSocket) {
         this.userSocket = userSocket;
@@ -22,5 +25,13 @@ public class User {
     public boolean equals(User user){
 
         return (this.getUuid().toString().equals(user.getUuid().toString()));
+    }
+
+    public ObjectOutputStream getOos() {
+        return oos;
+    }
+
+    public void setOos(ObjectOutputStream oos) {
+        this.oos = oos;
     }
 }
