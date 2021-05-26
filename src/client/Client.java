@@ -11,7 +11,7 @@ import java.util.Scanner;
 public class Client {
     public static void main(String[] args) {
         try {
-            Socket socket = new Socket("192.168.70.70",8188);
+            Socket socket = new Socket("localhost",8188);
             System.out.println("Подключился");
             ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
             DataOutputStream out = new DataOutputStream(socket.getOutputStream());
